@@ -6,3 +6,4 @@ This file contains the following items:
 - strawberry
 - lemon
 - shoe
+- persimmon
