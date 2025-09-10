@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Todo Shop - Checkout</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; }
+        .cart-item { border: 1px solid #ddd; padding: 10px; margin: 10px 0; }
+        .total { font-size: 1.2em; font-weight: bold; margin: 20px 0; }
+        .payment-section { background: #f5f5f5; padding: 20px; margin: 20px 0; }
+        .pay-button { background: #4CAF50; color: white; padding: 15px 32px; font-size: 16px; border: none; cursor: pointer; }
+        .pay-button:disabled { background: #cccccc; cursor: not-allowed; }
+        .error { color: red; margin: 10px 0; }
+        .region-selector { margin: 20px 0; }
+    </style>
+</head>
+<body>
+    <h1>Todo Shop - Checkout</h1>
+    
+    <div class="region-selector">
+        <label>
+            <input type="radio" name="region" value="US" checked> US Customer
+        </label>
+        <label>
+            <input type="radio" name="region" value="EU"> EU Customer
+        </label>
+    </div>
+
+    <div id="cart">
+        <h2>Your Cart</h2>
+        <div class="cart-item">
+            <span>Todo App Pro License</span>
+            <span>$29.99</span>
+        </div>
+        <div class="cart-item">
+            <span>Premium Support</span>
+            <span>$19.99</span>
+        </div>
+    </div>
+
+    <div class="total" id="total-display">
+        Total: Loading...
+    </div>
+
+    <div class="payment-section">
+        <h3>Payment</h3>
+        <div id="error-message" class="error" style="display: none;"></div>
+        <button class="pay-button" id="pay-button" onclick="processPayment()">Complete Order</button>
+    </div>
+
+    <script src="checkout.js"></script>
+</body>
+</html>
