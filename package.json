@@ -1,0 +1,13 @@
+{
+  "name": "checkout-processor",
+  "version": "1.0.0",
+  "description": "Checkout processor with tax calculations",
+  "main": "checkout.js",
+  "scripts": {
+    "test": "node test-checkout.js",
+    "test:us": "node test-checkout.js"
+  },
+  "keywords": ["checkout", "payment", "tax"],
+  "author": "",
+  "license": "ISC"
+}
