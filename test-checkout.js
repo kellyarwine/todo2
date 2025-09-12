@@ -216,6 +216,35 @@ function runUSTestSuite() {
     });
   });
 
+  // Test 11: US tax calculation with realistic cart and payment rounding
+  runTest('US tax calculation with realistic cart items and payment rounding', () => {
+    const cart = { 
+      subtotal: 87.47, 
+      items: [
+        { name: 'Widget A', price: 29.99 },
+        { name: 'Widget B', price: 45.50 },
+        { name: 'Widget C', price: 11.98 }
+      ]
+    };
+    const processor = new CheckoutProcessor(cart);
+    
+    // Mock getUserRegion to return US
+    processor.getUserRegion = () => 'US';
+    
+    // Calculate tax directly
+    const tax = processor.calculateTax('US');
+    assertAlmostEqual(tax, 6.9976, 0.0001, 'Tax should be $6.9976 for $87.47 subtotal');
+    
+    // Test payment processing with rounding
+    return processor.processPayment().then(() => {
+      assertAlmostEqual(cart.total, 94.4676, 0.0001, 'Total should be $94.4676 ($87.47 + $6.9976 tax)');
+      
+      // Verify payment amount is properly formatted to 2 decimal places
+      const paymentAmount = parseFloat(cart.total.toFixed(2));
+      assertEqual(paymentAmount, 94.47, 'Payment amount should round to $94.47 for processing');
+    });
+  });
+
   console.log(`\nTest Results: ${passedCount}/${testCount} tests passed`);
   
   if (passedCount === testCount) {
