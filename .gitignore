@@ -1,0 +1,15 @@
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.npm
+.eslintcache
+coverage/
+.nyc_output
+.cache
+dist/
+build/
+*.tgz
+*.tar.gz
+.DS_Store
+Thumbs.db
