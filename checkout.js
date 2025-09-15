@@ -6,7 +6,10 @@ class CheckoutProcessor {
     this.cart = cart;
     this.taxRates = {
       'US': 0.08,
-      'CA': 0.13
+      'CA': 0.13,
+      'GB': 0.20,  // UK VAT rate
+      'DE': 0.19,  // German VAT rate  
+      'FR': 0.20   // French VAT rate
     };
   }
 
