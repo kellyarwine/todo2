@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CheckoutProcessor Tests</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test-result { margin: 10px 0; padding: 10px; border-radius: 4px; }
+        .pass { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .fail { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .test-summary { margin-top: 20px; font-weight: bold; }
+        #country-select { margin: 10px 0; }
+        #pay-button { margin: 10px 0; padding: 10px; }
+    </style>
+</head>
+<body>
+    <h1>CheckoutProcessor Test Suite</h1>
+    
+    <!-- Mock DOM elements that checkout.js expects -->
+    <div style="display: none;">
+        <select id="country-select">
+            <option value="US">United States</option>
+            <option value="CA">Canada</option>
+            <option value="GB">Great Britain</option>
+            <option value="DE">Germany</option>
+            <option value="FR">France</option>
+        </select>
+        <button id="pay-button">Pay Now</button>
+    </div>
+    
+    <div id="test-results"></div>
+    <div id="test-summary"></div>
+
+    <script>
+        // Mock fetch for testing
+        global = {};
+        window.fetch = function(url, options) {
+            return Promise.resolve({
+                json: () => Promise.resolve({ success: true })
+            });
+        };
+
+        // Test framework
+        class TestRunner {
+            constructor() {
+                this.tests = [];
+                this.results = [];
+            }
+
+            test(name, testFn) {
+                this.tests.push({ name, testFn });
+            }
+
+            async run() {
+                console.log('Running tests...');
+                for (const test of this.tests) {
+                    try {
+                        await test.testFn();
+                        this.results.push({ name: test.name, passed: true });
+                        this.displayResult(test.name, true);
+                    } catch (error) {
+                        this.results.push({ name: test.name, passed: false, error: error.message });
+                        this.displayResult(test.name, false, error.message);
+                    }
+                }
+                this.displaySummary();
+            }
+
+            displayResult(name, passed, error = '') {
+                const resultsDiv = document.getElementById('test-results');
+                const resultDiv = document.createElement('div');
+                resultDiv.className = `test-result ${passed ? 'pass' : 'fail'}`;
+                resultDiv.innerHTML = `
+                    <strong>${passed ? '✓' : '✗'} ${name}</strong>
+                    ${error ? `<br><em>Error: ${error}</em>` : ''}
+                `;
+                resultsDiv.appendChild(resultDiv);
+            }
+
+            displaySummary() {
+                const passed = this.results.filter(r => r.passed).length;
+                const total = this.results.length;
+                const summaryDiv = document.getElementById('test-summary');
+                summaryDiv.innerHTML = `
+                    Tests completed: ${passed}/${total} passed
+                    ${passed === total ? '🎉 All tests passed!' : '❌ Some tests failed'}
+                `;
+            }
+
+            assert(condition, message) {
+                if (!condition) {
+                    throw new Error(message || 'Assertion failed');
+                }
+            }
+
+            assertEqual(actual, expected, message) {
+                if (actual !== expected) {
+                    throw new Error(message || `Expected ${expected}, got ${actual}`);
+                }
+            }
+
+            assertThrows(fn, message) {
+                try {
+                    fn();
+                    throw new Error(message || 'Expected function to throw');
+                } catch (error) {
+                    if (error.message === (message || 'Expected function to throw')) {
+                        throw error;
+                    }
+                    // Function threw as expected
+                }
+            }
+        }
+
+        const runner = new TestRunner();
+    </script>
+
+    <!-- Load the checkout.js but prevent the event listener from running immediately -->
+    <script>
+        // Temporarily disable getElementById to prevent the event listener from running
+        const originalGetElementById = document.getElementById;
+        document.getElementById = function(id) {
+            if (id === 'pay-button') return null;
+            return originalGetElementById.call(this, id);
+        };
+    </script>
+
+    <script src="checkout.js"></script>
+
+    <script>
+        // Restore getElementById
+        document.getElementById = originalGetElementById;
+
+        // Mock cart object for testing
+        function createMockCart(subtotal = 100, items = ['item1', 'item2']) {
+            return {
+                subtotal: subtotal,
+                items: items,
+                total: null
+            };
+        }
+
+        // Tests
+        runner.test('CheckoutProcessor constructor initializes correctly', () => {
+            const cart = createMockCart();
+            const processor = new CheckoutProcessor(cart);
+            
+            runner.assert(processor.cart === cart, 'Cart should be stored');
+            runner.assert(processor.taxRates.US === 0.08, 'US tax rate should be 0.08');
+            runner.assert(processor.taxRates.CA === 0.13, 'CA tax rate should be 0.13');
+        });
+
+        runner.test('calculateTax works for supported regions', () => {
+            const cart = createMockCart(100);
+            const processor = new CheckoutProcessor(cart);
+            
+            const usTax = processor.calculateTax('US');
+            runner.assertEqual(usTax, 8, 'US tax should be 8 for subtotal of 100');
+            
+            const caTax = processor.calculateTax('CA');
+            runner.assertEqual(caTax, 13, 'CA tax should be 13 for subtotal of 100');
+        });
+
+        runner.test('calculateTax returns NaN for unsupported regions (BUG)', () => {
+            const cart = createMockCart(100);
+            const processor = new CheckoutProcessor(cart);
+            
+            const deTax = processor.calculateTax('DE');
+            runner.assert(isNaN(deTax), 'DE tax should be NaN (this is the bug)');
+            
+            const gbTax = processor.calculateTax('GB');
+            runner.assert(isNaN(gbTax), 'GB tax should be NaN (this is the bug)');
+        });
+
+        runner.test('getCurrency works for all regions', () => {
+            const cart = createMockCart();
+            const processor = new CheckoutProcessor(cart);
+            
+            runner.assertEqual(processor.getCurrency('US'), 'USD', 'US currency should be USD');
+            runner.assertEqual(processor.getCurrency('CA'), 'CAD', 'CA currency should be CAD');
+            runner.assertEqual(processor.getCurrency('GB'), 'GBP', 'GB currency should be GBP');
+            runner.assertEqual(processor.getCurrency('DE'), 'EUR', 'DE currency should be EUR');
+            runner.assertEqual(processor.getCurrency('FR'), 'EUR', 'FR currency should be EUR');
+            runner.assertEqual(processor.getCurrency('UNKNOWN'), 'USD', 'Unknown region should default to USD');
+        });
+
+        runner.test('processPayment works for supported regions', async () => {
+            const cart = createMockCart(100);
+            const processor = new CheckoutProcessor(cart);
+            
+            // Mock getUserRegion to return US
+            processor.getUserRegion = () => 'US';
+            
+            const result = await processor.processPayment();
+            
+            runner.assertEqual(cart.total, 108, 'Cart total should be 108 (100 + 8 tax)');
+        });
+
+        runner.test('processPayment fails for unsupported regions (BUG)', async () => {
+            const cart = createMockCart(100);
+            const processor = new CheckoutProcessor(cart);
+            
+            // Mock getUserRegion to return DE (unsupported region)
+            processor.getUserRegion = () => 'DE';
+            
+            try {
+                await processor.processPayment();
+                runner.assert(false, 'processPayment should have thrown an error');
+            } catch (error) {
+                runner.assert(error.message.includes('toFixed'), 'Should fail on toFixed call due to NaN');
+            }
+        });
+
+        runner.test('submitPayment makes correct API call', async () => {
+            const cart = createMockCart();
+            const processor = new CheckoutProcessor(cart);
+            
+            const paymentData = {
+                amount: '108.00',
+                currency: 'USD',
+                items: ['item1', 'item2']
+            };
+            
+            const result = await processor.submitPayment(paymentData);
+            runner.assert(result, 'submitPayment should return a result');
+        });
+
+        // Run all tests when page loads
+        window.addEventListener('load', () => {
+            runner.run();
+        });
+    </script>
+</body>
+</html>
