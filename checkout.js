@@ -33,7 +33,16 @@ class CheckoutProcessor {
   }
 
   getUserRegion() {
-    return document.getElementById('country-select').value;
+    // For testing purposes, allow manual region setting
+    if (this.testRegion) {
+      return this.testRegion;
+    }
+    // Browser environment
+    if (typeof document !== 'undefined') {
+      return document.getElementById('country-select').value;
+    }
+    // Default for testing
+    return 'US';
   }
 
   getCurrency(region) {
@@ -57,14 +66,21 @@ class CheckoutProcessor {
   }
 }
 
-// Event handler for payment button
-document.getElementById('pay-button').addEventListener('click', () => {
-  const processor = new CheckoutProcessor(window.cart);
-  processor.processPayment()
-    .then(result => {
-      window.location.href = '/success';
-    })
-    .catch(error => {
-      console.error('Payment failed:', error);
-    });
-});
+// Event handler for payment button (only in browser environment)
+if (typeof document !== 'undefined') {
+  document.getElementById('pay-button').addEventListener('click', () => {
+    const processor = new CheckoutProcessor(window.cart);
+    processor.processPayment()
+      .then(result => {
+        window.location.href = '/success';
+      })
+      .catch(error => {
+        console.error('Payment failed:', error);
+      });
+  });
+}
+
+// Export for Node.js testing
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports = CheckoutProcessor;
+}
