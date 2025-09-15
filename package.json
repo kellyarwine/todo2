@@ -1,0 +1,13 @@
+{
+  "name": "todo2",
+  "version": "1.0.0",
+  "description": "Payment processing application with tests",
+  "main": "checkout.js",
+  "scripts": {
+    "test": "node test.js"
+  },
+  "keywords": ["payment", "checkout", "testing"],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {}
+}
