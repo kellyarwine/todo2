@@ -1,0 +1,13 @@
+{
+  "name": "todo2",
+  "version": "1.0.0",
+  "description": "Checkout processor with tests",
+  "main": "checkout.js",
+  "scripts": {
+    "test": "node test.js"
+  },
+  "devDependencies": {},
+  "keywords": ["checkout", "payment", "tax"],
+  "author": "",
+  "license": "ISC"
+}
