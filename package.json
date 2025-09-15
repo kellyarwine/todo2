@@ -1,0 +1,14 @@
+{
+  "name": "todo2",
+  "version": "1.0.0",
+  "description": "Payment processing system with checkout functionality",
+  "main": "checkout.js",
+  "scripts": {
+    "test": "node checkout.test.js",
+    "test:watch": "nodemon checkout.test.js"
+  },
+  "keywords": ["payment", "checkout", "ecommerce"],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {}
+}
