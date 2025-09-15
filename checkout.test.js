@@ -97,13 +97,18 @@ describe('CheckoutProcessor', () => {
 
   describe('getUserRegion', () => {
     test('should get region from country-select element', () => {
+      // Create a spy on the existing function and mock it
+      const getElementByIdSpy = jest.spyOn(document, 'getElementById');
       const mockElement = { value: 'US' };
-      document.getElementById.mockReturnValue(mockElement);
+      getElementByIdSpy.mockReturnValue(mockElement);
       
       const region = processor.getUserRegion();
       
-      expect(document.getElementById).toHaveBeenCalledWith('country-select');
+      expect(getElementByIdSpy).toHaveBeenCalledWith('country-select');
       expect(region).toBe('US');
+      
+      // Restore the spy
+      getElementByIdSpy.mockRestore();
     });
   });
 
@@ -130,11 +135,12 @@ describe('CheckoutProcessor', () => {
 
   describe('processPayment', () => {
     test('should process payment successfully for supported region', async () => {
-      // Mock getUserRegion to return 'US'
-      document.getElementById.mockReturnValue({ value: 'US' });
+      // Setup spies for DOM and fetch
+      const getElementByIdSpy = jest.spyOn(document, 'getElementById');
+      const fetchSpy = jest.spyOn(global, 'fetch');
       
-      // Mock fetch for submitPayment
-      fetch.mockReturnValue(Promise.resolve({ ok: true }));
+      getElementByIdSpy.mockReturnValue({ value: 'US' });
+      fetchSpy.mockReturnValue(Promise.resolve({ ok: true }));
       
       const result = processor.processPayment();
       
@@ -142,7 +148,7 @@ describe('CheckoutProcessor', () => {
       expect(processor.cart.total).toBe(108); // 100 + 8 (US tax)
       
       // Verify payment was submitted
-      expect(fetch).toHaveBeenCalledWith('/api/payments', {
+      expect(fetchSpy).toHaveBeenCalledWith('/api/payments', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -152,27 +158,52 @@ describe('CheckoutProcessor', () => {
         })
       });
       
+      // Cleanup
+      getElementByIdSpy.mockRestore();
+      fetchSpy.mockRestore();
+      
       return result;
     });
 
     test('should fail for unsupported region due to NaN total (bug demonstration)', () => {
-      // Mock getUserRegion to return unsupported region
-      document.getElementById.mockReturnValue({ value: 'GB' });
+      const getElementByIdSpy = jest.spyOn(document, 'getElementById');
+      const fetchSpy = jest.spyOn(global, 'fetch');
       
-      expect(() => {
-        processor.processPayment();
-      }).toThrow(); // This will throw because NaN.toFixed(2) throws TypeError
+      getElementByIdSpy.mockReturnValue({ value: 'GB' });
+      fetchSpy.mockReturnValue(Promise.resolve({ ok: true }));
+      
+      processor.processPayment();
+      
+      // The bug: cart.total becomes NaN for unsupported regions
+      expect(processor.cart.total).toBeNaN();
+      
+      // The payment data contains "NaN" as amount, which would fail at the payment processor
+      expect(fetchSpy).toHaveBeenCalledWith('/api/payments', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          amount: 'NaN', // This is the bug - invalid amount
+          currency: 'GBP', // GB region maps to GBP currency
+          items: ['item1', 'item2']
+        })
+      });
+      
+      getElementByIdSpy.mockRestore();
+      fetchSpy.mockRestore();
     });
 
     test('should process payment with different cart subtotal', () => {
+      const getElementByIdSpy = jest.spyOn(document, 'getElementById');
+      const fetchSpy = jest.spyOn(global, 'fetch');
+      
       processor.cart.subtotal = 50;
-      document.getElementById.mockReturnValue({ value: 'US' });
-      fetch.mockReturnValue(Promise.resolve({ ok: true }));
+      getElementByIdSpy.mockReturnValue({ value: 'US' });
+      fetchSpy.mockReturnValue(Promise.resolve({ ok: true }));
       
       processor.processPayment();
       
       expect(processor.cart.total).toBe(54); // 50 + 4 (US tax)
-      expect(fetch).toHaveBeenCalledWith('/api/payments', {
+      expect(fetchSpy).toHaveBeenCalledWith('/api/payments', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -181,16 +212,22 @@ describe('CheckoutProcessor', () => {
           items: ['item1', 'item2']
         })
       });
+      
+      getElementByIdSpy.mockRestore();
+      fetchSpy.mockRestore();
     });
 
     test('should use correct currency for CA region', () => {
-      document.getElementById.mockReturnValue({ value: 'CA' });
-      fetch.mockReturnValue(Promise.resolve({ ok: true }));
+      const getElementByIdSpy = jest.spyOn(document, 'getElementById');
+      const fetchSpy = jest.spyOn(global, 'fetch');
+      
+      getElementByIdSpy.mockReturnValue({ value: 'CA' });
+      fetchSpy.mockReturnValue(Promise.resolve({ ok: true }));
       
       processor.processPayment();
       
       expect(processor.cart.total).toBe(113); // 100 + 13 (CA tax)
-      expect(fetch).toHaveBeenCalledWith('/api/payments', {
+      expect(fetchSpy).toHaveBeenCalledWith('/api/payments', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -199,36 +236,54 @@ describe('CheckoutProcessor', () => {
           items: ['item1', 'item2']
         })
       });
+      
+      getElementByIdSpy.mockRestore();
+      fetchSpy.mockRestore();
     });
   });
 
   describe('Edge cases and error scenarios', () => {
     test('should handle missing country-select element gracefully', () => {
-      document.getElementById.mockReturnValue(null);
+      const getElementByIdSpy = jest.spyOn(document, 'getElementById');
+      getElementByIdSpy.mockReturnValue(null);
       
       expect(() => {
         processor.getUserRegion();
       }).toThrow(); // This will throw because null.value throws TypeError
+      
+      getElementByIdSpy.mockRestore();
     });
 
     test('should handle cart with zero subtotal', () => {
+      const getElementByIdSpy = jest.spyOn(document, 'getElementById');
+      const fetchSpy = jest.spyOn(global, 'fetch');
+      
       processor.cart.subtotal = 0;
-      document.getElementById.mockReturnValue({ value: 'US' });
-      fetch.mockReturnValue(Promise.resolve({ ok: true }));
+      getElementByIdSpy.mockReturnValue({ value: 'US' });
+      fetchSpy.mockReturnValue(Promise.resolve({ ok: true }));
       
       processor.processPayment();
       
       expect(processor.cart.total).toBe(0); // 0 + 0 (US tax)
+      
+      getElementByIdSpy.mockRestore();
+      fetchSpy.mockRestore();
     });
 
     test('should handle negative subtotal', () => {
+      const getElementByIdSpy = jest.spyOn(document, 'getElementById');
+      const fetchSpy = jest.spyOn(global, 'fetch');
+      
       processor.cart.subtotal = -50;
-      document.getElementById.mockReturnValue({ value: 'US' });
-      fetch.mockReturnValue(Promise.resolve({ ok: true }));
+      getElementByIdSpy.mockReturnValue({ value: 'US' });
+      fetchSpy.mockReturnValue(Promise.resolve({ ok: true }));
       
       processor.processPayment();
       
       expect(processor.cart.total).toBe(-54); // -50 + (-4) (US tax)
+      
+      getElementByIdSpy.mockRestore();
+      fetchSpy.mockRestore();
     });
   });
 });
