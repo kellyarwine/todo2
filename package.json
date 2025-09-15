@@ -1,0 +1,22 @@
+{
+  "name": "todo2",
+  "version": "1.0.0",
+  "description": "Todo application with checkout functionality",
+  "main": "checkout.js",
+  "scripts": {
+    "test": "jest",
+    "test:watch": "jest --watch"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0",
+    "jest-environment-jsdom": "^29.7.0",
+    "jsdom": "^22.1.0"
+  },
+  "jest": {
+    "testEnvironment": "jsdom",
+    "testMatch": [
+      "**/test/**/*.test.js",
+      "**/?(*.)+(spec|test).[jt]s?(x)"
+    ]
+  }
+}
