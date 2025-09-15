@@ -1,0 +1,7 @@
+// .gitignore
+node_modules/
+.npm
+*.log
+coverage/
+dist/
+.DS_Store
