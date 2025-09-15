@@ -1,0 +1,17 @@
+{
+  "name": "todo2-checkout",
+  "version": "1.0.0",
+  "description": "Checkout processor with tests",
+  "main": "checkout.js",
+  "scripts": {
+    "test": "jest",
+    "test:watch": "jest --watch"
+  },
+  "devDependencies": {
+    "jest": "^29.0.0",
+    "jest-environment-jsdom": "^29.0.0"
+  },
+  "jest": {
+    "testEnvironment": "jsdom"
+  }
+}
