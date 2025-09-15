@@ -12,7 +12,8 @@ class CheckoutProcessor {
 
   calculateTax(region) {
     const rate = this.taxRates[region];
-    return this.cart.subtotal * rate;
+    // Fix: default to 0 tax for unsupported regions instead of undefined
+    return this.cart.subtotal * (rate || 0);
   }
 
   processPayment() {

@@ -104,12 +104,20 @@ function runTests() {
     assertEqual(tax, 13, 'CA tax should be 13 (100 * 0.13)');
   });
 
-  // Test 3: Calculate tax for unsupported regions (BUG TEST)
-  test('Calculate tax for unsupported region returns NaN (BUG)', () => {
+  // Test 3: Calculate tax for unsupported regions (FIXED)
+  test('Calculate tax for unsupported region returns 0 (FIXED)', () => {
     const cart = { subtotal: 100 };
     const processor = new CheckoutProcessor(cart);
     const tax = processor.calculateTax('GB');
-    assertEqual(isNaN(tax), true, 'Tax for unsupported region should be NaN (this is the bug)');
+    assertEqual(tax, 0, 'Tax for unsupported region should default to 0');
+  });
+
+  // Test 3b: Calculate tax for completely unknown region
+  test('Calculate tax for unknown region returns 0', () => {
+    const cart = { subtotal: 100 };
+    const processor = new CheckoutProcessor(cart);
+    const tax = processor.calculateTax('XX');
+    assertEqual(tax, 0, 'Tax for unknown region should default to 0');
   });
 
   // Test 4: Currency mapping works correctly
@@ -133,21 +141,37 @@ function runTests() {
     assertEqual(processor.getCurrency('XX'), 'USD', 'Unsupported region should default to USD');
   });
 
-  // Test 5: Process payment fails for unsupported regions (BUG DEMONSTRATION)
-  test('Process payment fails for EU regions due to NaN total (BUG)', () => {
+  // Test 5: Process payment now works for EU regions (FIXED)
+  test('Process payment now works for EU regions (FIXED)', () => {
     global.document._setSelectedCountry('GB');
     const cart = { subtotal: 100, items: ['item1'] };
     const processor = new CheckoutProcessor(cart);
     
-    // The bug: this should work but fails because cart.total becomes NaN
-    try {
-      processor.processPayment();
-      // If we get here, check if total is NaN
-      assertEqual(isNaN(cart.total), true, 'Cart total should be NaN due to undefined tax calculation');
-    } catch (error) {
-      // This is expected - toFixed() fails on NaN
-      assertEqual(error.message.includes('toFixed'), true, 'Should fail on toFixed call');
-    }
+    // The fix: this should now work
+    const result = processor.processPayment();
+    assertEqual(cart.total, 100, 'Cart total should be 100 (100 + 0 tax for GB)');
+    assertEqual(typeof result.then, 'function', 'Should return a promise');
+  });
+
+  // Test 5b: Test other EU countries
+  test('Process payment works for DE region', () => {
+    global.document._setSelectedCountry('DE');
+    const cart = { subtotal: 100, items: ['item1'] };
+    const processor = new CheckoutProcessor(cart);
+    
+    const result = processor.processPayment();
+    assertEqual(cart.total, 100, 'Cart total should be 100 (100 + 0 tax for DE)');
+    assertEqual(typeof result.then, 'function', 'Should return a promise');
+  });
+
+  test('Process payment works for FR region', () => {
+    global.document._setSelectedCountry('FR');
+    const cart = { subtotal: 100, items: ['item1'] };
+    const processor = new CheckoutProcessor(cart);
+    
+    const result = processor.processPayment();
+    assertEqual(cart.total, 100, 'Cart total should be 100 (100 + 0 tax for FR)');
+    assertEqual(typeof result.then, 'function', 'Should return a promise');
   });
 
   // Test 6: Process payment works for supported regions
@@ -173,7 +197,12 @@ function runTests() {
 
   console.log(`\nTest Results: ${passed} passed, ${failed} failed`);
   
-  if (failed > 0) {
+  if (failed === 0) {
+    console.log('\n✅ ALL TESTS PASSED! Bug has been fixed.');
+    console.log('- calculateTax() now returns 0 for regions not in taxRates');
+    console.log('- EU users (GB, DE, FR) can now complete payments successfully');
+    console.log('- No more NaN errors in payment processing');
+  } else {
     console.log('\n🚨 BUGS DETECTED:');
     console.log('- calculateTax() returns undefined for regions not in taxRates');
     console.log('- This causes cart.total to become NaN, breaking toFixed(2)');
