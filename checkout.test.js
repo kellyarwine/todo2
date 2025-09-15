@@ -46,4 +46,39 @@ describe('CheckoutProcessor', () => {
       expect(formattedAmount).toBe('100.00'); // Should default to subtotal if no tax
     }).not.toThrow();
   });
+
+  test('should correctly calculate tax and process payment for US customers', async () => {
+    // Arrange
+    const mockCart = {
+      subtotal: 100.00,
+      items: ['product1', 'product2'],
+      total: null
+    };
+    
+    const processor = new CheckoutProcessor(mockCart);
+    
+    // Mock getUserRegion to return US
+    jest.spyOn(processor, 'getUserRegion').mockReturnValue('US');
+    
+    // Act
+    const result = await processor.processPayment();
+    
+    // Assert
+    // Verify tax calculation (8% for US)
+    expect(processor.cart.total).toBe(108.00); // 100 + 8% = 108
+    
+    // Verify payment was attempted with correct data
+    expect(fetch).toHaveBeenCalledWith('/api/payments', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        amount: '108.00',
+        currency: 'USD',
+        items: ['product1', 'product2']
+      })
+    });
+    
+    // Verify payment result
+    expect(result.ok).toBe(true);
+  });
 });
