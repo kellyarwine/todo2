@@ -177,5 +177,103 @@ describe('CheckoutProcessor', () => {
         body: JSON.stringify(paymentData)
       });
     });
+
+    test('should handle API error response', async () => {
+      const paymentData = {
+        amount: '108.00',
+        currency: 'USD',
+        items: ['item1', 'item2']
+      };
+      
+      fetch.mockResolvedValue({
+        ok: false,
+        status: 400,
+        json: async () => ({ error: 'Invalid payment data' })
+      });
+
+      const result = await processor.submitPayment(paymentData);
+      
+      expect(result.ok).toBe(false);
+      expect(result.status).toBe(400);
+    });
+
+    test('should handle network failure', async () => {
+      const paymentData = {
+        amount: '108.00',
+        currency: 'USD',
+        items: ['item1', 'item2']
+      };
+      
+      fetch.mockRejectedValue(new Error('Network error'));
+
+      await expect(processor.submitPayment(paymentData)).rejects.toThrow('Network error');
+    });
+  });
+
+  describe('Edge Cases', () => {
+    test('should handle empty cart items array', () => {
+      const emptyCartProcessor = new CheckoutProcessor({
+        subtotal: 100,
+        items: [],
+        total: null
+      });
+
+      const tax = emptyCartProcessor.calculateTax('US');
+      expect(tax).toBe(8);
+      expect(emptyCartProcessor.cart.items).toEqual([]);
+    });
+
+    test('should handle zero subtotal', () => {
+      const zeroCartProcessor = new CheckoutProcessor({
+        subtotal: 0,
+        items: ['free-item'],
+        total: null
+      });
+
+      const tax = zeroCartProcessor.calculateTax('US');
+      expect(tax).toBe(0); // 0 * 0.08 = 0
+    });
+
+    test('should handle negative subtotal (edge case)', () => {
+      const negativeCartProcessor = new CheckoutProcessor({
+        subtotal: -50,
+        items: ['refund-item'],
+        total: null
+      });
+
+      const tax = negativeCartProcessor.calculateTax('CA');
+      expect(tax).toBe(-6.5); // -50 * 0.13 = -6.5
+    });
+
+    test('should handle large subtotal amounts', () => {
+      const largeCartProcessor = new CheckoutProcessor({
+        subtotal: 999999.99,
+        items: ['expensive-item'],
+        total: null
+      });
+
+      const tax = largeCartProcessor.calculateTax('US');
+      expect(tax).toBe(79999.9992); // 999999.99 * 0.08
+    });
+
+    test('should handle decimal precision in tax calculation', () => {
+      const precisionCartProcessor = new CheckoutProcessor({
+        subtotal: 123.45,
+        items: ['precision-test'],
+        total: null
+      });
+
+      const tax = precisionCartProcessor.calculateTax('CA');
+      expect(tax).toBeCloseTo(16.0485, 4); // 123.45 * 0.13
+    });
+
+    test('should handle case-sensitive region codes', () => {
+      // This test exposes that the implementation is case-sensitive
+      const tax1 = processor.calculateTax('us'); // lowercase
+      const tax2 = processor.calculateTax('US'); // uppercase
+      
+      expect(tax1).toBeNaN(); // Will be NaN because 'us' is not in taxRates
+      expect(tax2).toBe(8);   // Will work because 'US' is in taxRates
+    });
   });
 });
