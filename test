@@ -1,1 +1,4 @@
-hi
+Test file for CheckoutProcessor
+Run tests:
+- Browser: Open test.html in a web browser
+- Node.js: Run "node test.js"
