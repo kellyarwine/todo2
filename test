@@ -1,1 +1,3 @@
-hi
+This directory contains tests for the todo2 application.
+
+Run tests with: node checkout.test.js
