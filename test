@@ -1,1 +1,217 @@
-hi
+// Test suite for CheckoutProcessor
+// Run with: node test
+
+// Mock DOM elements for testing
+global.document = {
+  getElementById: function(id) {
+    if (id === 'country-select') {
+      return { value: this._selectedCountry || 'US' };
+    }
+    if (id === 'pay-button') {
+      return { addEventListener: function() {} };
+    }
+    return null;
+  },
+  _setSelectedCountry: function(country) {
+    this._selectedCountry = country;
+  }
+};
+
+// Mock fetch for testing
+global.fetch = function(url, options) {
+  return Promise.resolve({
+    ok: true,
+    json: () => Promise.resolve({ success: true })
+  });
+};
+
+// Mock window object
+global.window = {
+  cart: {
+    subtotal: 100,
+    items: ['item1', 'item2'],
+    total: null
+  },
+  location: { href: '' }
+};
+
+// Import the CheckoutProcessor class
+const CheckoutProcessor = require('./checkout.js');
+
+// Test runner
+function runTests() {
+  let passed = 0;
+  let failed = 0;
+  
+  function test(name, fn) {
+    try {
+      fn();
+      console.log(`✅ ${name}`);
+      passed++;
+    } catch (error) {
+      console.log(`❌ ${name}: ${error.message}`);
+      failed++;
+    }
+  }
+  
+  function assertEqual(actual, expected, message) {
+    if (actual !== expected) {
+      throw new Error(`${message}: expected ${expected}, got ${actual}`);
+    }
+  }
+  
+  function assertNotEqual(actual, unexpected, message) {
+    if (actual === unexpected) {
+      throw new Error(`${message}: expected not ${unexpected}, got ${actual}`);
+    }
+  }
+  
+  function assertThrows(fn, message) {
+    try {
+      fn();
+      throw new Error(`${message}: expected function to throw`);
+    } catch (error) {
+      if (error.message.includes('expected function to throw')) {
+        throw error;
+      }
+      // Expected behavior - function threw an error
+    }
+  }
+
+  console.log('Running CheckoutProcessor Tests...\n');
+
+  // Test 1: Constructor initializes correctly
+  test('Constructor initializes cart and tax rates', () => {
+    const cart = { subtotal: 100, items: [] };
+    const processor = new CheckoutProcessor(cart);
+    assertEqual(processor.cart, cart, 'Cart should be set');
+    assertEqual(processor.taxRates.US, 0.08, 'US tax rate should be 0.08');
+    assertEqual(processor.taxRates.CA, 0.13, 'CA tax rate should be 0.13');
+  });
+
+  // Test 2: Calculate tax for supported regions
+  test('Calculate tax for US region', () => {
+    const cart = { subtotal: 100 };
+    const processor = new CheckoutProcessor(cart);
+    const tax = processor.calculateTax('US');
+    assertEqual(tax, 8, 'US tax should be 8 (100 * 0.08)');
+  });
+
+  test('Calculate tax for CA region', () => {
+    const cart = { subtotal: 100 };
+    const processor = new CheckoutProcessor(cart);
+    const tax = processor.calculateTax('CA');
+    assertEqual(tax, 13, 'CA tax should be 13 (100 * 0.13)');
+  });
+
+  // Test 3: Calculate tax for unsupported regions (FIXED)
+  test('Calculate tax for unsupported region returns 0 (FIXED)', () => {
+    const cart = { subtotal: 100 };
+    const processor = new CheckoutProcessor(cart);
+    const tax = processor.calculateTax('GB');
+    assertEqual(tax, 0, 'Tax for unsupported region should default to 0');
+  });
+
+  // Test 3b: Calculate tax for completely unknown region
+  test('Calculate tax for unknown region returns 0', () => {
+    const cart = { subtotal: 100 };
+    const processor = new CheckoutProcessor(cart);
+    const tax = processor.calculateTax('XX');
+    assertEqual(tax, 0, 'Tax for unknown region should default to 0');
+  });
+
+  // Test 4: Currency mapping works correctly
+  test('Get currency for US', () => {
+    const processor = new CheckoutProcessor({});
+    assertEqual(processor.getCurrency('US'), 'USD', 'US currency should be USD');
+  });
+
+  test('Get currency for CA', () => {
+    const processor = new CheckoutProcessor({});
+    assertEqual(processor.getCurrency('CA'), 'CAD', 'CA currency should be CAD');
+  });
+
+  test('Get currency for GB', () => {
+    const processor = new CheckoutProcessor({});
+    assertEqual(processor.getCurrency('GB'), 'GBP', 'GB currency should be GBP');
+  });
+
+  test('Get currency for unsupported region defaults to USD', () => {
+    const processor = new CheckoutProcessor({});
+    assertEqual(processor.getCurrency('XX'), 'USD', 'Unsupported region should default to USD');
+  });
+
+  // Test 5: Process payment now works for EU regions (FIXED)
+  test('Process payment now works for EU regions (FIXED)', () => {
+    global.document._setSelectedCountry('GB');
+    const cart = { subtotal: 100, items: ['item1'] };
+    const processor = new CheckoutProcessor(cart);
+    
+    // The fix: this should now work
+    const result = processor.processPayment();
+    assertEqual(cart.total, 100, 'Cart total should be 100 (100 + 0 tax for GB)');
+    assertEqual(typeof result.then, 'function', 'Should return a promise');
+  });
+
+  // Test 5b: Test other EU countries
+  test('Process payment works for DE region', () => {
+    global.document._setSelectedCountry('DE');
+    const cart = { subtotal: 100, items: ['item1'] };
+    const processor = new CheckoutProcessor(cart);
+    
+    const result = processor.processPayment();
+    assertEqual(cart.total, 100, 'Cart total should be 100 (100 + 0 tax for DE)');
+    assertEqual(typeof result.then, 'function', 'Should return a promise');
+  });
+
+  test('Process payment works for FR region', () => {
+    global.document._setSelectedCountry('FR');
+    const cart = { subtotal: 100, items: ['item1'] };
+    const processor = new CheckoutProcessor(cart);
+    
+    const result = processor.processPayment();
+    assertEqual(cart.total, 100, 'Cart total should be 100 (100 + 0 tax for FR)');
+    assertEqual(typeof result.then, 'function', 'Should return a promise');
+  });
+
+  // Test 6: Process payment works for supported regions
+  test('Process payment works for US region', () => {
+    global.document._setSelectedCountry('US');
+    const cart = { subtotal: 100, items: ['item1'] };
+    const processor = new CheckoutProcessor(cart);
+    
+    const result = processor.processPayment();
+    assertEqual(cart.total, 108, 'Cart total should be 108 (100 + 8 tax)');
+    assertEqual(typeof result.then, 'function', 'Should return a promise');
+  });
+
+  test('Process payment works for CA region', () => {
+    global.document._setSelectedCountry('CA');
+    const cart = { subtotal: 100, items: ['item1'] };
+    const processor = new CheckoutProcessor(cart);
+    
+    const result = processor.processPayment();
+    assertEqual(cart.total, 113, 'Cart total should be 113 (100 + 13 tax)');
+    assertEqual(typeof result.then, 'function', 'Should return a promise');
+  });
+
+  console.log(`\nTest Results: ${passed} passed, ${failed} failed`);
+  
+  if (failed === 0) {
+    console.log('\n✅ ALL TESTS PASSED! Bug has been fixed.');
+    console.log('- calculateTax() now returns 0 for regions not in taxRates');
+    console.log('- EU users (GB, DE, FR) can now complete payments successfully');
+    console.log('- No more NaN errors in payment processing');
+  } else {
+    console.log('\n🚨 BUGS DETECTED:');
+    console.log('- calculateTax() returns undefined for regions not in taxRates');
+    console.log('- This causes cart.total to become NaN, breaking toFixed(2)');
+    console.log('- EU users (GB, DE, FR) cannot complete payments');
+  }
+  
+  return failed === 0;
+}
+
+if (require.main === module) {
+  runTests();
+}
