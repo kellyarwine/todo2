@@ -1,0 +1,12 @@
+{
+  "name": "todo2",
+  "version": "1.0.0",
+  "description": "Todo app with payment processing",
+  "main": "checkout.js",
+  "scripts": {
+    "test": "jest"
+  },
+  "devDependencies": {
+    "jest": "^29.0.0"
+  }
+}
