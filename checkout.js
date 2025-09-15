@@ -1,5 +1,5 @@
 // checkout.js - Payment processing with tax calculation
-// Deployed this morning - breaks for EU users
+// Deployed this morning (2025-09-14) - breaks for EU users
 
 class CheckoutProcessor {
   constructor(cart) {
