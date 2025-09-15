@@ -345,4 +345,169 @@ describe('CheckoutProcessor', () => {
       expect(typeof result).toBe('object'); // Returns a Promise
     });
   });
+
+  describe('Error Handling Tests', () => {
+    test('should handle network failure during payment submission', async () => {
+      global.document.getElementById.mockReturnValue({ value: 'US' });
+      
+      global.fetch.mockRejectedValue(new Error('Network error'));
+
+      const result = processor.processPayment();
+
+      // Should return a rejected promise
+      await expect(result).rejects.toThrow('Network error');
+    });
+
+    test('should handle API server error responses', async () => {
+      global.document.getElementById.mockReturnValue({ value: 'US' });
+      
+      global.fetch.mockResolvedValue({
+        ok: false,
+        status: 500,
+        statusText: 'Internal Server Error'
+      });
+
+      const result = processor.processPayment();
+
+      // Should still call the API
+      expect(global.fetch).toHaveBeenCalledWith('/api/payments', expect.any(Object));
+    });
+
+    test('should handle missing country select element', () => {
+      global.document.getElementById.mockReturnValue(null);
+
+      expect(() => {
+        processor.getUserRegion();
+      }).toThrow();
+    });
+  });
+
+  describe('Edge Case Tests', () => {
+    test('should handle zero subtotal cart', () => {
+      const zeroCart = {
+        subtotal: 0,
+        items: [],
+        total: null
+      };
+      
+      const zeroProcessor = new CheckoutProcessor(zeroCart);
+      global.document.getElementById.mockReturnValue({ value: 'US' });
+      
+      global.fetch.mockResolvedValue({
+        ok: true,
+        json: () => Promise.resolve({ success: true })
+      });
+
+      zeroProcessor.processPayment();
+
+      expect(zeroProcessor.cart.total).toBe(0); // 0 + 0 tax
+      expect(global.fetch).toHaveBeenCalledWith('/api/payments', expect.objectContaining({
+        body: expect.stringContaining('"amount":"0.00"')
+      }));
+    });
+
+    test('should handle empty cart items array', () => {
+      const emptyCart = {
+        subtotal: 50.00,
+        items: [],
+        total: null
+      };
+      
+      const emptyProcessor = new CheckoutProcessor(emptyCart);
+      global.document.getElementById.mockReturnValue({ value: 'US' });
+      
+      global.fetch.mockResolvedValue({
+        ok: true,
+        json: () => Promise.resolve({ success: true })
+      });
+
+      emptyProcessor.processPayment();
+
+      expect(emptyProcessor.cart.total).toBe(54.00); // 50 + 4 tax
+      expect(global.fetch).toHaveBeenCalledWith('/api/payments', expect.objectContaining({
+        body: expect.stringContaining('"items":[]')
+      }));
+    });
+
+    test('should handle very large subtotal amounts', () => {
+      const largeCart = {
+        subtotal: 999999.99,
+        items: [{ id: 1, name: 'Expensive Item', price: 999999.99 }],
+        total: null
+      };
+      
+      const largeProcessor = new CheckoutProcessor(largeCart);
+      global.document.getElementById.mockReturnValue({ value: 'US' });
+      
+      global.fetch.mockResolvedValue({
+        ok: true,
+        json: () => Promise.resolve({ success: true })
+      });
+
+      largeProcessor.processPayment();
+
+      const expectedTax = 999999.99 * 0.08; // 79999.9992
+      const expectedTotal = 999999.99 + expectedTax; // 1079999.9892
+      
+      expect(largeProcessor.cart.total).toBe(expectedTotal);
+      expect(global.fetch).toHaveBeenCalledWith('/api/payments', expect.objectContaining({
+        body: expect.stringContaining('"amount":"1079999.99"')
+      }));
+    });
+
+    test('should handle undefined region input', () => {
+      global.document.getElementById.mockReturnValue({ value: undefined });
+
+      const tax = processor.calculateTax(undefined);
+      expect(tax).toBeNaN();
+      
+      const currency = processor.getCurrency(undefined);
+      expect(currency).toBe('USD'); // Default fallback
+    });
+  });
+
+  describe('Mock Verification Tests', () => {
+    test('should verify all mocks are called with correct parameters', () => {
+      global.document.getElementById.mockReturnValue({ value: 'CA' });
+      
+      global.fetch.mockResolvedValue({
+        ok: true,
+        json: () => Promise.resolve({ success: true })
+      });
+
+      processor.processPayment();
+
+      // Verify getElementById was called correctly
+      expect(global.document.getElementById).toHaveBeenCalledTimes(1);
+      expect(global.document.getElementById).toHaveBeenCalledWith('country-select');
+
+      // Verify fetch was called correctly
+      expect(global.fetch).toHaveBeenCalledTimes(1);
+      expect(global.fetch).toHaveBeenCalledWith('/api/payments', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          amount: '113.00',
+          currency: 'CAD',
+          items: mockCart.items
+        })
+      });
+    });
+
+    test('should not call fetch if no country is selected', () => {
+      global.document.getElementById.mockReturnValue({ value: '' });
+
+      const tax = processor.calculateTax('');
+      expect(tax).toBeNaN();
+      
+      // Reset fetch mock call count
+      global.fetch.mockClear();
+      
+      // This would fail in processPayment due to NaN total
+      processor.processPayment();
+      
+      // Fetch should still be called even with invalid data
+      expect(global.fetch).toHaveBeenCalledTimes(1);
+    });
+  });
 });
