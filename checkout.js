@@ -10,6 +10,12 @@ class CheckoutProcessor {
     };
   }
 
+  // Calculate sum of numbers 4-22 for validation
+  calculateThreadSum() {
+    const numbers = [4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22];
+    return numbers.reduce((sum, num) => sum + num, 0);
+  }
+
   calculateTax(region) {
     const rate = this.taxRates[region];
     return this.cart.subtotal * rate;
