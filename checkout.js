@@ -6,13 +6,17 @@ class CheckoutProcessor {
     this.cart = cart;
     this.taxRates = {
       'US': 0.08,
-      'CA': 0.13
+      'CA': 0.13,
+      'GB': 0.20,  // UK VAT
+      'DE': 0.19,  // Germany VAT
+      'FR': 0.20   // France VAT
     };
   }
 
   calculateTax(region) {
     const rate = this.taxRates[region];
-    return this.cart.subtotal * rate;
+    // Handle unknown regions by defaulting to 0% tax rate
+    return this.cart.subtotal * (rate || 0);
   }
 
   processPayment() {
