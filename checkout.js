@@ -6,12 +6,15 @@ class CheckoutProcessor {
     this.cart = cart;
     this.taxRates = {
       'US': 0.08,
-      'CA': 0.13
+      'CA': 0.13,
+      'GB': 0.20,
+      'DE': 0.19,
+      'FR': 0.20
     };
   }
 
   calculateTax(region) {
-    const rate = this.taxRates[region];
+    const rate = this.taxRates[region] || 0;
     return this.cart.subtotal * rate;
   }
 
