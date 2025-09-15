@@ -57,14 +57,29 @@ class CheckoutProcessor {
   }
 }
 
-// Event handler for payment button
-document.getElementById('pay-button').addEventListener('click', () => {
-  const processor = new CheckoutProcessor(window.cart);
-  processor.processPayment()
-    .then(result => {
-      window.location.href = '/success';
-    })
-    .catch(error => {
-      console.error('Payment failed:', error);
+// Export for Node.js testing
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports = CheckoutProcessor;
+}
+
+// Make available globally for browser
+if (typeof window !== 'undefined') {
+  window.CheckoutProcessor = CheckoutProcessor;
+}
+
+// Event handler for payment button - only run in browser environment
+if (typeof document !== 'undefined' && document.getElementById) {
+  const payButton = document.getElementById('pay-button');
+  if (payButton) {
+    payButton.addEventListener('click', () => {
+      const processor = new CheckoutProcessor(window.cart);
+      processor.processPayment()
+        .then(result => {
+          window.location.href = '/success';
+        })
+        .catch(error => {
+          console.error('Payment failed:', error);
+        });
     });
-});
+  }
+}
