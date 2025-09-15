@@ -1,0 +1,13 @@
+{
+  "name": "todo2-checkout",
+  "version": "1.0.0",
+  "description": "Payment processing with checkout functionality",
+  "main": "checkout.js",
+  "scripts": {
+    "test": "node --test",
+    "test:watch": "node --test --watch"
+  },
+  "type": "module",
+  "author": "",
+  "license": "ISC"
+}
