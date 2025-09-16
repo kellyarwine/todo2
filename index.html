@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enterprise Todo App</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f6f8fa;
+        }
+        
+        .auth-container {
+            max-width: 400px;
+            margin: 100px auto;
+            padding: 30px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        
+        .app-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: #24292e;
+            color: white;
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .header h1 {
+            margin: 0;
+            font-size: 20px;
+        }
+        
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .user-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+        }
+        
+        .content {
+            padding: 30px;
+        }
+        
+        .sign-in-btn {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            font-size: 16px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            transition: background-color 0.2s;
+        }
+        
+        .sign-in-btn:hover {
+            background: #218838;
+        }
+        
+        .sign-out-btn {
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            font-size: 14px;
+            cursor: pointer;
+        }
+        
+        .sign-out-btn:hover {
+            background: #c82333;
+        }
+        
+        .checkout-section {
+            margin-top: 30px;
+            padding: 20px;
+            border: 1px solid #e1e4e8;
+            border-radius: 6px;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+        }
+        
+        .form-group select, .form-group input {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #d1d5da;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        
+        .cart-summary {
+            background: #f6f8fa;
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+        
+        .pay-button {
+            background: #0366d6;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            font-size: 16px;
+            cursor: pointer;
+            width: 100%;
+        }
+        
+        .pay-button:hover {
+            background: #0256cc;
+        }
+        
+        .pay-button:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        .error {
+            color: #dc3545;
+            background: #f8d7da;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        
+        .github-icon {
+            width: 20px;
+            height: 20px;
+            margin-right: 8px;
+            vertical-align: middle;
+        }
+    </style>
+</head>
+<body>
+    <!-- Authentication Screen -->
+    <div id="auth-screen" class="auth-container">
+        <h2>Enterprise Access Required</h2>
+        <p>Please sign in with your GitHub enterprise account to access this application.</p>
+        <p><small>Only enterprise staff members are authorized to use this application for CELA compliance.</small></p>
+        
+        <button class="sign-in-btn" onclick="signInWithGitHub()">
+            <svg class="github-icon" viewBox="0 0 16 16" fill="currentColor">
+                <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/>
+            </svg>
+            Sign in with GitHub
+        </button>
+        
+        <div id="auth-error" class="error hidden"></div>
+    </div>
+
+    <!-- Main Application -->
+    <div id="app-screen" class="app-container hidden">
+        <div class="header">
+            <h1>Enterprise Todo App</h1>
+            <div class="user-info">
+                <img id="user-avatar" class="user-avatar" src="" alt="User Avatar">
+                <span id="user-name"></span>
+                <button class="sign-out-btn" onclick="signOut()">Sign Out</button>
+            </div>
+        </div>
+        
+        <div class="content">
+            <div class="checkout-section">
+                <h3>Payment Checkout</h3>
+                <p>Complete your purchase below:</p>
+                
+                <div class="cart-summary">
+                    <h4>Cart Summary</h4>
+                    <div>Subtotal: $<span id="subtotal">99.99</span></div>
+                    <div>Tax: $<span id="tax">0.00</span></div>
+                    <div><strong>Total: $<span id="total">99.99</span></strong></div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="country-select">Country/Region:</label>
+                    <select id="country-select" onchange="updateTax()">
+                        <option value="US">United States</option>
+                        <option value="CA">Canada</option>
+                        <option value="GB">United Kingdom</option>
+                        <option value="DE">Germany</option>
+                        <option value="FR">France</option>
+                        <option value="EU">Other EU</option>
+                    </select>
+                </div>
+                
+                <button id="pay-button" class="pay-button">
+                    Complete Payment
+                </button>
+                
+                <div id="payment-error" class="error hidden"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Configuration - these would be set by the server in a real deployment
+        window.GITHUB_CLIENT_ID = 'demo_client_id';
+        window.GITHUB_REDIRECT_URI = window.location.origin + '/auth/callback';
+        window.GITHUB_ENTERPRISE_ORG = 'demo_enterprise_org';
+    </script>
+    <script src="auth.js"></script>
+    <script src="checkout.js"></script>
+    <script>
+        // Initialize the application
+        window.cart = {
+            subtotal: 99.99,
+            total: 99.99,
+            items: [
+                { name: "Enterprise License", price: 99.99, quantity: 1 }
+            ]
+        };
+
+        function signInWithGitHub() {
+            try {
+                window.githubAuth.signIn();
+            } catch (error) {
+                showAuthError('Failed to initiate sign-in: ' + error.message);
+            }
+        }
+
+        function signOut() {
+            window.githubAuth.signOut();
+        }
+
+        function showAuthError(message) {
+            const errorDiv = document.getElementById('auth-error');
+            errorDiv.textContent = message;
+            errorDiv.classList.remove('hidden');
+        }
+
+        function showPaymentError(message) {
+            const errorDiv = document.getElementById('payment-error');
+            errorDiv.textContent = message;
+            errorDiv.classList.remove('hidden');
+        }
+
+        function updateTax() {
+            const processor = new CheckoutProcessor(window.cart);
+            const region = document.getElementById('country-select').value;
+            const tax = processor.calculateTax(region) || 0;
+            const total = window.cart.subtotal + tax;
+            
+            document.getElementById('tax').textContent = tax.toFixed(2);
+            document.getElementById('total').textContent = total.toFixed(2);
+            document.getElementById('subtotal').textContent = window.cart.subtotal.toFixed(2);
+        }
+
+        function initializeApp() {
+            if (window.githubAuth.isAuthenticated()) {
+                const user = window.githubAuth.getCurrentUser();
+                document.getElementById('user-name').textContent = user.name || user.login;
+                document.getElementById('user-avatar').src = user.avatar_url;
+                
+                document.getElementById('auth-screen').classList.add('hidden');
+                document.getElementById('app-screen').classList.remove('hidden');
+                
+                updateTax(); // Initialize tax calculation
+            } else {
+                document.getElementById('auth-screen').classList.remove('hidden');
+                document.getElementById('app-screen').classList.add('hidden');
+            }
+        }
+
+        // Enhanced payment button event handler with authentication check
+        document.getElementById('pay-button').addEventListener('click', () => {
+            // Clear any previous errors
+            document.getElementById('payment-error').classList.add('hidden');
+            
+            // Verify user is still authenticated
+            if (!window.githubAuth.isAuthenticated()) {
+                showPaymentError('Authentication required. Please sign in again.');
+                signOut();
+                return;
+            }
+
+            const processor = new CheckoutProcessor(window.cart);
+            processor.processPayment()
+                .then(result => {
+                    window.location.href = '/success';
+                })
+                .catch(error => {
+                    console.error('Payment failed:', error);
+                    showPaymentError('Payment failed: ' + error.message);
+                });
+        });
+
+        // Initialize the app when page loads
+        document.addEventListener('DOMContentLoaded', initializeApp);
+
+        // Handle OAuth callback if present
+        if (window.location.search.includes('code=')) {
+            // OAuth callback handling is done in auth.js
+            // Just show loading state
+            document.body.innerHTML = '<div class="auth-container"><h2>Authenticating...</h2><p>Please wait while we verify your credentials.</p></div>';
+        }
+    </script>
+</body>
+</html>

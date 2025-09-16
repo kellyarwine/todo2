@@ -6,27 +6,38 @@ class CheckoutProcessor {
     this.cart = cart;
     this.taxRates = {
       'US': 0.08,
-      'CA': 0.13
+      'CA': 0.13,
+      'GB': 0.20,
+      'DE': 0.19,
+      'FR': 0.20,
+      'EU': 0.21  // Default EU rate for other EU countries
     };
   }
 
   calculateTax(region) {
     const rate = this.taxRates[region];
-    return this.cart.subtotal * rate;
+    // Fix: Handle undefined tax rates (was causing null total for EU users)
+    return rate ? this.cart.subtotal * rate : 0;
   }
 
   processPayment() {
+    // Verify authentication before processing payment
+    if (!window.githubAuth || !window.githubAuth.isAuthenticated()) {
+      throw new Error('Authentication required. Please sign in with your GitHub enterprise account.');
+    }
+
     const region = this.getUserRegion();
     const tax = this.calculateTax(region);
     
-    // BUG: cart.total becomes null for regions not in taxRates
+    // Fix: Ensure total is never null (was breaking for EU users)
     this.cart.total = this.cart.subtotal + tax;
     
-    // This breaks when cart.total is null
+    // This now safely works for all regions
     const paymentData = {
       amount: this.cart.total.toFixed(2),
       currency: this.getCurrency(region),
-      items: this.cart.items
+      items: this.cart.items,
+      user: window.githubAuth.getCurrentUser()?.login  // Include authenticated user info
     };
 
     return this.submitPayment(paymentData);
@@ -48,23 +59,22 @@ class CheckoutProcessor {
   }
 
   submitPayment(data) {
+    // Include authentication token in payment request
+    const authHeader = window.githubAuth?.getAuthHeader();
+    const headers = { 'Content-Type': 'application/json' };
+    
+    if (authHeader) {
+      headers['Authorization'] = authHeader;
+    }
+
     // Payment API call
     return fetch('/api/payments', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: headers,
       body: JSON.stringify(data)
     });
   }
 }
 
-// Event handler for payment button
-document.getElementById('pay-button').addEventListener('click', () => {
-  const processor = new CheckoutProcessor(window.cart);
-  processor.processPayment()
-    .then(result => {
-      window.location.href = '/success';
-    })
-    .catch(error => {
-      console.error('Payment failed:', error);
-    });
-});
+// Event handler for payment button - moved to index.html for better integration
+// This file now provides the CheckoutProcessor class for use in authenticated context
