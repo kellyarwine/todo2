@@ -1,17 +1,20 @@
 // checkout.js - Payment processing with tax calculation
-// Deployed this morning - breaks for EU users
+// Deployed this morning (2025-09-14) - breaks for EU users
 
 class CheckoutProcessor {
   constructor(cart) {
     this.cart = cart;
     this.taxRates = {
       'US': 0.08,
-      'CA': 0.13
+      'CA': 0.13,
+      'GB': 0.20,
+      'DE': 0.19,
+      'FR': 0.20
     };
   }
 
   calculateTax(region) {
-    const rate = this.taxRates[region];
+    const rate = this.taxRates[region] || 0;
     return this.cart.subtotal * rate;
   }
 
