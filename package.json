@@ -1,0 +1,13 @@
+{
+  "name": "todo2-checkout",
+  "version": "1.0.0",
+  "description": "Checkout system with tax calculation",
+  "main": "checkout.js",
+  "scripts": {
+    "test": "node test.js",
+    "test:simple": "node test-simple.js"
+  },
+  "keywords": ["checkout", "payment", "tax"],
+  "author": "Kelly Arwine",
+  "license": "MIT"
+}
