@@ -225,6 +225,12 @@
         </div>
     </div>
 
+    <script>
+        // Configuration - these would be set by the server in a real deployment
+        window.GITHUB_CLIENT_ID = 'demo_client_id';
+        window.GITHUB_REDIRECT_URI = window.location.origin + '/auth/callback';
+        window.GITHUB_ENTERPRISE_ORG = 'demo_enterprise_org';
+    </script>
     <script src="auth.js"></script>
     <script src="checkout.js"></script>
     <script>

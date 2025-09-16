@@ -3,9 +3,10 @@
 
 class GitHubAuth {
   constructor() {
-    this.clientId = process.env.GITHUB_CLIENT_ID || 'your_github_client_id';
-    this.redirectUri = process.env.GITHUB_REDIRECT_URI || window.location.origin + '/auth/callback';
-    this.enterpriseOrg = process.env.GITHUB_ENTERPRISE_ORG || 'your_enterprise_org';
+    // Use window properties or defaults for browser environment
+    this.clientId = window.GITHUB_CLIENT_ID || 'your_github_client_id';
+    this.redirectUri = window.GITHUB_REDIRECT_URI || window.location.origin + '/auth/callback';
+    this.enterpriseOrg = window.GITHUB_ENTERPRISE_ORG || 'your_enterprise_org';
     this.currentUser = null;
   }
 
