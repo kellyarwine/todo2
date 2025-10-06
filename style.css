@@ -1,0 +1,421 @@
+/* Reset and Base Styles */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    line-height: 1.6;
+    color: #333;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+    padding: 1rem;
+}
+
+/* Container - Mobile First */
+.container {
+    max-width: 100%;
+    width: 100%;
+    margin: 0 auto;
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    min-height: calc(100vh - 2rem);
+}
+
+/* Header */
+.app-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 2rem 1.5rem 2.5rem;
+    text-align: center;
+}
+
+.app-header h1 {
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.app-header p {
+    font-size: 1.1rem;
+    opacity: 0.9;
+    font-weight: 300;
+}
+
+/* Main Content */
+.main-content {
+    padding: 2rem 1.5rem;
+}
+
+/* Add Task Section */
+.add-task-section {
+    margin-bottom: 2rem;
+}
+
+.input-group {
+    display: flex;
+    gap: 0.75rem;
+    align-items: stretch;
+}
+
+#taskInput {
+    flex: 1;
+    padding: 1rem 1.25rem;
+    border: 2px solid #e1e5e9;
+    border-radius: 12px;
+    font-size: 1rem;
+    background: #f8f9fa;
+    transition: all 0.3s ease;
+    min-height: 54px; /* Touch-friendly minimum height */
+}
+
+#taskInput:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    background: white;
+}
+
+#taskInput::placeholder {
+    color: #6c757d;
+}
+
+#addBtn {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    padding: 1rem;
+    min-width: 54px; /* Touch-friendly minimum width */
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#addBtn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+}
+
+#addBtn:active {
+    transform: translateY(0);
+}
+
+.add-icon {
+    font-size: 1.5rem;
+    font-weight: bold;
+}
+
+/* Task Stats */
+.task-stats {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+#taskCount {
+    font-weight: 600;
+    color: #495057;
+    font-size: 0.95rem;
+}
+
+.clear-btn {
+    background: #dc3545;
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    opacity: 0.7;
+}
+
+.clear-btn:hover {
+    opacity: 1;
+    transform: translateY(-1px);
+}
+
+.clear-btn:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+    transform: none;
+}
+
+/* Task List */
+.task-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.task-item {
+    background: #f8f9fa;
+    border: 2px solid #e9ecef;
+    border-radius: 12px;
+    padding: 1rem 1.25rem;
+    margin-bottom: 0.75rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    transition: all 0.3s ease;
+    min-height: 60px; /* Touch-friendly height */
+}
+
+.task-item:hover {
+    border-color: #667eea;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.task-item.completed {
+    background: #d4edda;
+    border-color: #c3e6cb;
+    opacity: 0.8;
+}
+
+.task-checkbox {
+    width: 20px;
+    height: 20px;
+    border: 2px solid #6c757d;
+    border-radius: 6px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: white;
+    transition: all 0.3s ease;
+    flex-shrink: 0;
+}
+
+.task-checkbox.checked {
+    background: #28a745;
+    border-color: #28a745;
+    color: white;
+}
+
+.task-checkbox::after {
+    content: '✓';
+    opacity: 0;
+    transform: scale(0.5);
+    transition: all 0.3s ease;
+    font-size: 12px;
+    font-weight: bold;
+}
+
+.task-checkbox.checked::after {
+    opacity: 1;
+    transform: scale(1);
+}
+
+.task-text {
+    flex: 1;
+    font-size: 1rem;
+    color: #495057;
+    word-break: break-word;
+    line-height: 1.4;
+}
+
+.task-item.completed .task-text {
+    text-decoration: line-through;
+    color: #6c757d;
+}
+
+.task-actions {
+    display: flex;
+    gap: 0.5rem;
+    flex-shrink: 0;
+}
+
+.delete-btn {
+    background: #dc3545;
+    color: white;
+    border: none;
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    font-size: 1.2rem;
+}
+
+.delete-btn:hover {
+    background: #c82333;
+    transform: scale(1.1);
+}
+
+/* Empty State */
+.empty-state {
+    text-align: center;
+    padding: 3rem 1rem;
+    color: #6c757d;
+}
+
+.empty-state.hidden {
+    display: none;
+}
+
+.empty-icon {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    opacity: 0.5;
+}
+
+.empty-state h3 {
+    font-size: 1.25rem;
+    margin-bottom: 0.5rem;
+    color: #495057;
+}
+
+.empty-state p {
+    font-size: 0.95rem;
+    opacity: 0.8;
+}
+
+/* Responsive Design - Tablet */
+@media (min-width: 768px) {
+    body {
+        padding: 2rem;
+    }
+    
+    .container {
+        max-width: 600px;
+        min-height: auto;
+    }
+    
+    .app-header {
+        padding: 3rem 2rem 3.5rem;
+    }
+    
+    .app-header h1 {
+        font-size: 3rem;
+    }
+    
+    .main-content {
+        padding: 2.5rem 2rem;
+    }
+    
+    .input-group {
+        gap: 1rem;
+    }
+    
+    #taskInput {
+        padding: 1.25rem 1.5rem;
+        font-size: 1.1rem;
+    }
+    
+    #addBtn {
+        padding: 1.25rem;
+        min-width: 60px;
+    }
+    
+    .task-item {
+        padding: 1.25rem 1.5rem;
+        min-height: 65px;
+    }
+    
+    .task-text {
+        font-size: 1.1rem;
+    }
+}
+
+/* Responsive Design - Desktop */
+@media (min-width: 1024px) {
+    body {
+        padding: 3rem;
+    }
+    
+    .container {
+        max-width: 700px;
+    }
+    
+    .app-header {
+        padding: 4rem 3rem 4.5rem;
+    }
+    
+    .main-content {
+        padding: 3rem;
+    }
+    
+    .input-group {
+        gap: 1.25rem;
+    }
+    
+    .task-item {
+        padding: 1.5rem 2rem;
+        min-height: 70px;
+    }
+    
+    .empty-state {
+        padding: 4rem 2rem;
+    }
+}
+
+/* Accessibility and Touch Improvements */
+@media (max-width: 480px) {
+    .app-header h1 {
+        font-size: 2.25rem;
+    }
+    
+    .task-stats {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0.75rem;
+    }
+    
+    .clear-btn {
+        align-self: center;
+        padding: 0.75rem 1.25rem;
+    }
+    
+    .task-actions {
+        gap: 0.75rem;
+    }
+    
+    .delete-btn {
+        width: 40px;
+        height: 40px;
+        font-size: 1.3rem;
+    }
+}
+
+/* Focus styles for better accessibility */
+button:focus,
+input:focus {
+    outline: 2px solid #667eea;
+    outline-offset: 2px;
+}
+
+/* Smooth animations */
+* {
+    transition: all 0.3s ease;
+}
+
+/* Loading and interaction states */
+.task-item.adding {
+    animation: slideIn 0.3s ease;
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
