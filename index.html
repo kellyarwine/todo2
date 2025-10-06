@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Todo2 - Simple Todo with Greetings</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        .greeting-box {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .todo-container {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: 10px;
+        }
+        .greeting-message {
+            font-size: 2em;
+            margin-bottom: 10px;
+        }
+        .todo-item {
+            padding: 10px;
+            margin: 5px 0;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 5px;
+        }
+        button {
+            background: #4CAF50;
+            border: none;
+            color: white;
+            padding: 10px 20px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            margin: 4px 2px;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+        button:hover {
+            background: #45a049;
+        }
+    </style>
+</head>
+<body>
+    <div class="greeting-box">
+        <div class="greeting-message">👋 hi</div>
+        <p>Welcome to Todo2 - Your simple todo manager!</p>
+        <button onclick="addGreeting()">Say Hi Back!</button>
+    </div>
+
+    <div class="todo-container">
+        <h2>Your Todos:</h2>
+        <div id="todo-list">
+            <div class="todo-item">1. Say hi to everyone</div>
+            <div class="todo-item">2. Build awesome todo features</div>
+        </div>
+        <br>
+        <button onclick="addTodo()">Add Todo</button>
+    </div>
+
+    <script>
+        function addGreeting() {
+            alert("Hi there! Thanks for using Todo2! 😊");
+        }
+
+        function addTodo() {
+            const todoText = prompt("What would you like to add to your todos?");
+            if (todoText) {
+                const todoList = document.getElementById('todo-list');
+                const todoCount = todoList.children.length + 1;
+                const newTodo = document.createElement('div');
+                newTodo.className = 'todo-item';
+                newTodo.textContent = `${todoCount}. ${todoText}`;
+                todoList.appendChild(newTodo);
+            }
+        }
+
+        // Display greeting on page load
+        console.log("hi - Todo2 app loaded successfully!");
+    </script>
+</body>
+</html>
