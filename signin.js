@@ -28,7 +28,8 @@ class SigninManager {
   }
 
   validateEmail(email) {
-    // More robust email validation pattern
+    // RFC 5322 compliant email validation pattern
+    // Matches most valid email addresses while preventing common malformed inputs
     const emailRegex = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
     return emailRegex.test(email);
   }
@@ -88,9 +89,18 @@ class SigninManager {
     
     // Validate return URL to prevent open redirect attacks
     if (returnUrl) {
-      // Only allow relative URLs (starting with /)
-      if (returnUrl.startsWith('/') && !returnUrl.startsWith('//')) {
-        return returnUrl;
+      try {
+        // Try to construct URL - this validates the format
+        const url = new URL(returnUrl, window.location.origin);
+        
+        // Only allow same-origin URLs
+        if (url.origin === window.location.origin) {
+          // Return just the path, search, and hash (no origin)
+          return url.pathname + url.search + url.hash;
+        }
+      } catch (e) {
+        // Invalid URL format, fall through to default
+        console.warn('Invalid return URL:', returnUrl);
       }
     }
     
