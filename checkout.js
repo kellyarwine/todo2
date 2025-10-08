@@ -71,7 +71,9 @@ class CheckoutProcessor {
 document.getElementById('pay-button').addEventListener('click', () => {
   // Check if user is signed in before processing payment
   if (window.signinManager && !window.signinManager.isSignedIn()) {
-    window.location.href = '/signin.html';
+    // Redirect to signin with return URL
+    const currentPage = encodeURIComponent(window.location.pathname);
+    window.location.href = `/signin.html?returnUrl=${currentPage}`;
     return;
   }
 

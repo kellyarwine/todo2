@@ -10,12 +10,26 @@ class SigninManager {
     // Check if user is already signed in
     const savedUser = localStorage.getItem('currentUser');
     if (savedUser) {
-      this.currentUser = JSON.parse(savedUser);
+      try {
+        const parsed = JSON.parse(savedUser);
+        // Validate the structure of the parsed data
+        if (parsed && typeof parsed === 'object' && parsed.id && parsed.email) {
+          this.currentUser = parsed;
+        } else {
+          // Invalid data structure, clear it
+          localStorage.removeItem('currentUser');
+        }
+      } catch (error) {
+        // Invalid JSON, clear it
+        console.error('Invalid user data in localStorage:', error);
+        localStorage.removeItem('currentUser');
+      }
     }
   }
 
   validateEmail(email) {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    // More robust email validation pattern
+    const emailRegex = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
     return emailRegex.test(email);
   }
 
@@ -65,6 +79,23 @@ class SigninManager {
       console.error('Signin error:', error);
       throw error;
     }
+  }
+
+  getRedirectUrl() {
+    // Check for return URL parameter
+    const urlParams = new URLSearchParams(window.location.search);
+    const returnUrl = urlParams.get('returnUrl');
+    
+    // Validate return URL to prevent open redirect attacks
+    if (returnUrl) {
+      // Only allow relative URLs (starting with /)
+      if (returnUrl.startsWith('/') && !returnUrl.startsWith('//')) {
+        return returnUrl;
+      }
+    }
+    
+    // Default to home page
+    return '/';
   }
 
   async signup(email, password, name) {
@@ -168,8 +199,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
       try {
         await window.signinManager.signin(email, password);
-        // Redirect to home or checkout page
-        window.location.href = '/';
+        // Redirect to return URL or home page
+        window.location.href = window.signinManager.getRedirectUrl();
       } catch (error) {
         showError(error.message);
       }
@@ -194,8 +225,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
       try {
         await window.signinManager.signup(email, password, name);
-        // Redirect to home or checkout page
-        window.location.href = '/';
+        // Redirect to return URL or home page
+        window.location.href = window.signinManager.getRedirectUrl();
       } catch (error) {
         showError(error.message);
       }
