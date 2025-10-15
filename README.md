@@ -9,6 +9,7 @@ October 15, 2025
 This project contains a CheckoutProcessor for handling payment processing with tax calculation support.
 
 ## Features
-- Tax calculation for multiple regions (US, CA)
+- Tax calculation for US and CA regions
 - Multi-currency support (USD, CAD, GBP, EUR)
+- Support for multiple countries (US, CA, GB, DE, FR)
 - Payment API integration
