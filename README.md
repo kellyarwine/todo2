@@ -8,3 +8,8 @@ October 21, 2025
 - apple
 - orange
 - lemon
+- dog
+- cat
+- bear
+- mouse
+- tiger
