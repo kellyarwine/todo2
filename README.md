@@ -9,3 +9,6 @@ October 21, 2025
 - orange
 - lemon
 - dog
+- cat
+- bear
+- mouse
