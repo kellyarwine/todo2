@@ -10,3 +10,5 @@ October 21, 2025
 - lemon
 - vanilla
 - taco
+- nacho
+- beans
