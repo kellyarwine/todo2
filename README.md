@@ -44,7 +44,7 @@ A simple test file containing basic test data.
 ⚠️ **Critical Bug**: The checkout processor breaks for EU users (regions: GB, DE, FR, etc.)
 
 **Problem**: When `calculateTax()` is called for a region not defined in the `taxRates` object (lines 7-10 in checkout.js), it returns `NaN` (undefined * subtotal). This causes:
-1. `cart.total` to become `NaN` (subtotal + undefined)
+1. `cart.total` to become `NaN` (subtotal + NaN = NaN)
 2. `toFixed(2)` call on `NaN` causes a runtime error
 3. Payment processing fails for EU users
 
