@@ -16,7 +16,7 @@ This project provides a checkout processor that handles payment transactions wit
 ## Files
 
 - `checkout.js` - Main checkout processor with payment and tax calculation logic
-- `test` - Test file
+- `test` - Simple test file (minimal content)
 
 ## Usage
 
@@ -52,7 +52,7 @@ Supported currencies:
 
 ## Known Issues
 
-⚠️ **EU Region Tax Bug**: The system currently breaks for EU users (GB, DE, FR) because tax rates are not defined for these regions. This causes `cart.total` to become `null`, resulting in a JavaScript error when calling `.toFixed(2)`.
+⚠️ **EU Region Tax Bug**: The system currently breaks for EU users (GB, DE, FR) because tax rates are not defined for these regions. This causes `calculateTax()` to return `NaN`, which makes `cart.total` become `NaN`, resulting in invalid payment data being sent to the API.
 
 **Status**: Deployed with this issue - affects EU users
 
