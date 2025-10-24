@@ -20,9 +20,9 @@ This repository contains a payment checkout processor implementation that handle
 ### checkout.js
 
 Contains the `CheckoutProcessor` class that handles:
-- Tax calculation for different regions (US, CA)
+- Tax calculation for US and CA regions (other regions need tax rates defined)
 - Payment processing workflow
-- Currency conversion
+- Currency conversion for US, CA, GB, DE, and FR
 - Payment API submission
 
 **Current Tax Rates:**
@@ -43,7 +43,7 @@ A simple test file containing basic test data.
 
 ⚠️ **Critical Bug**: The checkout processor breaks for EU users (regions: GB, DE, FR, etc.)
 
-**Problem**: When `calculateTax()` is called for a region not defined in the `taxRates` object (lines 7-10 in checkout.js), it returns `undefined`. This causes:
+**Problem**: When `calculateTax()` is called for a region not defined in the `taxRates` object (lines 7-10 in checkout.js), it returns `NaN` (undefined * subtotal). This causes:
 1. `cart.total` to become `NaN` (subtotal + undefined)
 2. `toFixed(2)` call on `NaN` causes a runtime error
 3. Payment processing fails for EU users
@@ -52,7 +52,7 @@ A simple test file containing basic test data.
 ```javascript
 calculateTax(region) {
   const rate = this.taxRates[region];
-  return this.cart.subtotal * rate;  // Returns NaN for undefined rate
+  return this.cart.subtotal * rate;  // Returns NaN when rate is undefined
 }
 
 processPayment() {
