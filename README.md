@@ -38,8 +38,8 @@ processor.processPayment()
 
 ⚠️ **Critical Bug**: The checkout process breaks for EU users (regions not in taxRates).
 - When `calculateTax()` is called with a region not in the `taxRates` object (like 'GB', 'DE', 'FR'), it returns `undefined`
-- This causes `cart.total` to become `NaN` 
-- Calling `.toFixed(2)` on `NaN` throws an error, breaking the payment process
+- This causes `cart.total` to become `NaN` when adding `subtotal + undefined`
+- The `.toFixed(2)` call on `NaN` returns the string `'NaN'`, which is then sent to the payment API, likely causing payment processing to fail
 
 **Regions with tax rates defined:**
 - US: 8%
