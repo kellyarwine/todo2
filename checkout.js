@@ -49,9 +49,19 @@ class CheckoutProcessor {
 
   submitPayment(data) {
     // Payment API call
+    const headers = { 'Content-Type': 'application/json' };
+    
+    // Add authentication token if user is signed in
+    if (window.signinManager && window.signinManager.isSignedIn()) {
+      const token = window.signinManager.getAuthToken();
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+    }
+    
     return fetch('/api/payments', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: headers,
       body: JSON.stringify(data)
     });
   }
@@ -59,6 +69,14 @@ class CheckoutProcessor {
 
 // Event handler for payment button
 document.getElementById('pay-button').addEventListener('click', () => {
+  // Check if user is signed in before processing payment
+  if (window.signinManager && !window.signinManager.isSignedIn()) {
+    // Redirect to signin with return URL
+    const currentPage = encodeURIComponent(window.location.pathname);
+    window.location.href = `/signin.html?returnUrl=${currentPage}`;
+    return;
+  }
+
   const processor = new CheckoutProcessor(window.cart);
   processor.processPayment()
     .then(result => {
