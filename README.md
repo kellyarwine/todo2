@@ -9,3 +9,5 @@ October 21, 2025
 - orange
 - lemon
 - vanilla
+- rocky road
+- chocolate
