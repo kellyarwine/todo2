@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Todo2 - Simple Task Manager</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header class="app-header">
+            <h1>Todo2</h1>
+            <p>Simple Task Manager</p>
+        </header>
+
+        <main class="main-content">
+            <section class="add-task-section">
+                <div class="input-group">
+                    <input type="text" id="taskInput" placeholder="Add a new task..." aria-label="New task">
+                    <button id="addBtn" aria-label="Add task">
+                        <span class="add-icon">+</span>
+                    </button>
+                </div>
+            </section>
+
+            <section class="tasks-section">
+                <div class="task-stats">
+                    <span id="taskCount">0 tasks</span>
+                    <button id="clearCompleted" class="clear-btn">Clear Completed</button>
+                </div>
+                
+                <ul id="taskList" class="task-list">
+                    <!-- Tasks will be added dynamically -->
+                </ul>
+
+                <div id="emptyState" class="empty-state">
+                    <div class="empty-icon">📝</div>
+                    <h3>No tasks yet</h3>
+                    <p>Add your first task above to get started!</p>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
