@@ -11,7 +11,7 @@ class CheckoutProcessor {
   }
 
   calculateTax(region) {
-    const rate = this.taxRates[region];
+    const rate = this.taxRates[region] || 0;
     return this.cart.subtotal * rate;
   }
 
