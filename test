@@ -1,1 +1,2 @@
-hi
+See checkout.test.js for comprehensive test suite
+Run: node checkout.test.js
