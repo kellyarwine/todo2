@@ -1,0 +1,11 @@
+{
+  "name": "todo2",
+  "version": "1.0.0",
+  "description": "Checkout processing application",
+  "main": "checkout.js",
+  "scripts": {
+    "test": "node test-runner.js"
+  },
+  "devDependencies": {},
+  "dependencies": {}
+}
