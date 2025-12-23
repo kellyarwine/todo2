@@ -6,23 +6,31 @@ class CheckoutProcessor {
     this.cart = cart;
     this.taxRates = {
       'US': 0.08,
-      'CA': 0.13
+      'CA': 0.13,
+      'GB': 0.20,
+      'DE': 0.19,
+      'FR': 0.20
     };
   }
 
   calculateTax(region) {
     const rate = this.taxRates[region];
-    return this.cart.subtotal * rate;
+    // Handle unknown regions gracefully with 0% tax
+    return this.cart.subtotal * (rate || 0);
   }
 
   processPayment() {
     const region = this.getUserRegion();
     const tax = this.calculateTax(region);
     
-    // BUG: cart.total becomes null for regions not in taxRates
+    // BUG: cart.total becomes null for regions not in taxRates - FIXED
     this.cart.total = this.cart.subtotal + tax;
     
-    // This breaks when cart.total is null
+    // Validate cart.total before formatting
+    if (isNaN(this.cart.total) || this.cart.total == null) {
+      throw new Error(`Invalid total amount for region: ${region}`);
+    }
+    
     const paymentData = {
       amount: this.cart.total.toFixed(2),
       currency: this.getCurrency(region),
